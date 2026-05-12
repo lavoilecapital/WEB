@@ -1,218 +1,215 @@
-import { useEffect, useRef, useState, ReactNode } from 'react';
+import { useState, useEffect } from 'react';
+import { LogoMark } from './Logo';
 
-interface ScrollExpandMediaProps {
-  mediaSrc: string;
-  posterSrc?: string;
-  scrollToExpand?: string;
-  overlayContent?: ReactNode;
-  onScrollProgress?: (progress: number) => void;
-  children?: ReactNode;
+const links = [
+  { href: '#services', label: 'Services' },
+  { href: '#realestate', label: 'Real Estate' },
+  { href: '#concierge', label: 'Concierge' },
+  { href: '#process', label: 'Process' },
+  { href: '#contact', label: 'Contact' },
+];
+
+const langs = [
+  {
+    code: 'en',
+    label: 'English',
+    flag: (
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+        <rect width="22" height="16" fill="#012169" />
+        <path d="M0 0L22 16M22 0L0 16" stroke="white" strokeWidth="3" />
+        <path d="M0 0L22 16M22 0L0 16" stroke="#C8102E" strokeWidth="1.8" />
+        <rect x="9" width="4" height="16" fill="white" />
+        <rect y="6" width="22" height="4" fill="white" />
+        <rect x="9.5" width="3" height="16" fill="#C8102E" />
+        <rect y="6.5" width="22" height="3" fill="#C8102E" />
+      </svg>
+    ),
+  },
+  {
+    code: 'fr',
+    label: 'Français',
+    flag: (
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+        <rect width="7.33" height="16" fill="#002395" />
+        <rect x="7.33" width="7.33" height="16" fill="#fff" />
+        <rect x="14.66" width="7.34" height="16" fill="#ED2939" />
+      </svg>
+    ),
+  },
+  {
+    code: 'de',
+    label: 'Deutsch',
+    flag: (
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+        <rect width="22" height="5.33" fill="#000" />
+        <rect y="5.33" width="22" height="5.33" fill="#D00" />
+        <rect y="10.66" width="22" height="5.34" fill="#FFCE00" />
+      </svg>
+    ),
+  },
+  {
+    code: 'it',
+    label: 'Italiano',
+    flag: (
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+        <rect width="7.33" height="16" fill="#009246" />
+        <rect x="7.33" width="7.33" height="16" fill="#fff" />
+        <rect x="14.66" width="7.34" height="16" fill="#CE2B37" />
+      </svg>
+    ),
+  },
+];
+
+function translateTo(langCode: string) {
+  const selectEl = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+  if (selectEl) {
+    selectEl.value = langCode;
+    selectEl.dispatchEvent(new Event('change'));
+    return;
+  }
+  const domain = window.location.hostname;
+  document.cookie = `googtrans=/en/${langCode}; domain=${domain}; path=/`;
+  document.cookie = `googtrans=/en/${langCode}; path=/`;
+  window.location.reload();
 }
 
-// Dubai Marina aerial panoramic — free Unsplash license
-const BG_IMAGE = 'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=1920&q=80&auto=format&fit=crop';
-
-const ScrollExpandMedia = ({
-  mediaSrc,
-  posterSrc,
-  scrollToExpand = 'Scroll to discover',
-  overlayContent,
-  onScrollProgress,
-  children,
-}: ScrollExpandMediaProps) => {
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [showContent, setShowContent] = useState(false);
-  const [mediaFullyExpanded, setMediaFullyExpanded] = useState(false);
-  const [touchStartY, setTouchStartY] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const sectionRef = useRef<HTMLDivElement>(null);
+export default function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [activeLang, setActiveLang] = useState('en');
 
   useEffect(() => {
-    const checkIfMobile = () => setIsMobile(window.innerWidth < 768);
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (mediaFullyExpanded && e.deltaY < 0 && window.scrollY <= 5) {
-        setMediaFullyExpanded(false);
-        e.preventDefault();
-      } else if (!mediaFullyExpanded) {
-        e.preventDefault();
-        const scrollDelta = e.deltaY * 0.0009;
-        const newProgress = Math.min(Math.max(scrollProgress + scrollDelta, 0), 1);
-        setScrollProgress(newProgress);
-        onScrollProgress?.(newProgress);
-        if (newProgress >= 1) {
-          setMediaFullyExpanded(true);
-          setShowContent(true);
-        } else if (newProgress < 0.75) {
-          setShowContent(false);
-        }
-      }
-    };
+  const handleLang = (code: string) => {
+    setActiveLang(code);
+    translateTo(code);
+  };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      setTouchStartY(e.touches[0].clientY);
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!touchStartY) return;
-      const touchY = e.touches[0].clientY;
-      const deltaY = touchStartY - touchY;
-      if (mediaFullyExpanded && deltaY < -20 && window.scrollY <= 5) {
-        setMediaFullyExpanded(false);
-        e.preventDefault();
-      } else if (!mediaFullyExpanded) {
-        e.preventDefault();
-        const scrollFactor = deltaY < 0 ? 0.008 : 0.005;
-        const scrollDelta = deltaY * scrollFactor;
-        const newProgress = Math.min(Math.max(scrollProgress + scrollDelta, 0), 1);
-        setScrollProgress(newProgress);
-        onScrollProgress?.(newProgress);
-        if (newProgress >= 1) {
-          setMediaFullyExpanded(true);
-          setShowContent(true);
-        } else if (newProgress < 0.75) {
-          setShowContent(false);
-        }
-        setTouchStartY(touchY);
-      }
-    };
-
-    const handleTouchEnd = () => setTouchStartY(0);
-    const handleScroll = () => {
-      if (!mediaFullyExpanded) window.scrollTo(0, 0);
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [scrollProgress, mediaFullyExpanded, touchStartY]);
-
-  const mediaWidth = 300 + scrollProgress * (isMobile ? 650 : 1250);
-  const mediaHeight = 400 + scrollProgress * (isMobile ? 200 : 400);
-  const videoObjectPosition = `center ${Math.round(80 - scrollProgress * 80)}%`;
+  const close = () => setOpen(false);
 
   return (
-    <div ref={sectionRef} className="overflow-x-hidden">
-      <section className="relative flex flex-col items-center justify-start min-h-screen bg-[#0A0A0A]">
-        <div className="relative w-full flex flex-col items-center min-h-screen">
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-16 py-4 transition-all duration-300 ${
+          scrolled ? 'bg-black/95 backdrop-blur-md border-b border-white/10' : ''
+        }`}
+      >
+        {/* Logo — always visible */}
+        <a href="#home" className="flex items-center gap-2.5 no-underline flex-shrink-0">
+          <LogoMark size={36} />
+          <span className="font-serif text-sm md:text-base font-bold tracking-widest text-white uppercase">
+            La Voile Capital
+          </span>
+        </a>
 
-          {/* Fixed background image — fades out as video expands */}
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              opacity: Math.max(0, 1 - scrollProgress * 1.5),
-              transition: 'none',
-            }}
+        {/* Desktop nav links */}
+        <ul className="hidden lg:flex gap-8 list-none">
+          {links.map(l => (
+            <li key={l.href}>
+              <a
+                href={l.href}
+                className="text-xs font-semibold tracking-widest uppercase text-white/65 hover:text-white transition-colors no-underline"
+              >
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        {/* Right: flags + CTA (desktop) */}
+        <div className="hidden lg:flex items-center gap-4">
+          <div className="grid grid-cols-2 gap-1">
+            {langs.map(l => (
+              <button
+                key={l.code}
+                onClick={() => handleLang(l.code)}
+                title={l.label}
+                className={`rounded overflow-hidden border transition-all duration-200 cursor-pointer bg-transparent p-0 ${
+                  activeLang === l.code
+                    ? 'border-white/80 opacity-100 scale-105'
+                    : 'border-white/20 opacity-50 hover:opacity-90 hover:border-white/50'
+                }`}
+                style={{ width: 26, height: 19 }}
+              >
+                {l.flag}
+              </button>
+            ))}
+          </div>
+          <a
+            href="#contact"
+            className="text-xs font-semibold tracking-widest uppercase border border-white/40 text-white px-5 py-2.5 hover:bg-white hover:text-black transition-all no-underline"
           >
-            <img
-              src={BG_IMAGE}
-              alt="Dubai Marina"
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-black/60" />
-          </div>
-
-          <div className="container mx-auto flex flex-col items-center justify-start relative z-10">
-            <div className="flex flex-col items-center justify-center w-full min-h-screen relative">
-
-              {/* Expanding + panning video */}
-              <div
-                className="absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl overflow-hidden"
-                style={{
-                  width: `${mediaWidth}px`,
-                  height: `${mediaHeight}px`,
-                  maxWidth: '95vw',
-                  maxHeight: '85vh',
-                  boxShadow: '0px 0px 60px rgba(0,0,0,0.5)',
-                  transition: 'none',
-                }}
-              >
-                <video
-                  src={mediaSrc}
-                  poster={posterSrc}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="auto"
-                  className="w-full h-full object-cover"
-                  style={{
-                    objectPosition: videoObjectPosition,
-                    transition: 'none',
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'rgba(0,0,0,0.45)',
-                    opacity: Math.max(0, 0.8 - scrollProgress * 0.8),
-                    transition: 'none',
-                  }}
-                />
-              </div>
-
-              {/* Overlay text */}
-              {overlayContent && (
-                <div
-                  className="relative z-10 w-full flex flex-col items-center pointer-events-none px-6"
-                  style={{
-                    opacity: Math.max(0, 1 - scrollProgress * 2.5),
-                    transition: 'none',
-                  }}
-                >
-                  {overlayContent}
-                </div>
-              )}
-
-              {/* Scroll hint */}
-              <div
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
-                style={{
-                  opacity: Math.max(0, 1 - scrollProgress * 4),
-                  transition: 'none',
-                }}
-              >
-                <p className="text-white/50 text-[0.65rem] font-semibold tracking-[0.25em] uppercase">
-                  {scrollToExpand}
-                </p>
-                <svg width="14" height="22" viewBox="0 0 16 24" fill="none" className="animate-bounce">
-                  <rect x="6.5" y="3" width="3" height="6" rx="1.5" fill="white" opacity="0.4" />
-                  <rect x="1" y="1" width="14" height="22" rx="7" stroke="white" strokeWidth="1.5" opacity="0.25" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Content after full expansion */}
-            <div
-              className="flex flex-col w-full"
-              style={{
-                opacity: showContent ? 1 : 0,
-                transition: 'opacity 0.7s ease',
-              }}
-            >
-              {children}
-            </div>
-          </div>
+            Get in Touch
+          </a>
         </div>
-      </section>
-    </div>
-  );
-};
 
-export default ScrollExpandMedia;
+        {/* Mobile right: flags 2x2 + hamburger */}
+        <div className="flex lg:hidden items-center gap-3">
+          <div className="grid grid-cols-2 gap-0.5">
+            {langs.map(l => (
+              <button
+                key={l.code}
+                onClick={() => handleLang(l.code)}
+                title={l.label}
+                className={`rounded overflow-hidden border transition-all duration-200 cursor-pointer bg-transparent p-0 ${
+                  activeLang === l.code
+                    ? 'border-white/80 opacity-100'
+                    : 'border-white/20 opacity-50'
+                }`}
+                style={{ width: 22, height: 16 }}
+              >
+                {l.flag}
+              </button>
+            ))}
+          </div>
+          <button
+            className="flex flex-col gap-1.5 bg-transparent border-none cursor-pointer p-1"
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+          >
+            <span className="block w-6 h-px bg-white" />
+            <span className="block w-6 h-px bg-white" />
+            <span className="block w-6 h-px bg-white" />
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile menu */}
+      <div
+        className={`fixed inset-0 bg-black z-50 flex flex-col items-center justify-center gap-8 transition-opacity duration-300 ${
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <button
+          className="absolute top-8 right-10 text-3xl text-white/60 bg-transparent border-none cursor-pointer"
+          onClick={close}
+        >
+          ✕
+        </button>
+
+        {links.map(l => (
+          <a
+            key={l.href}
+            href={l.href}
+            onClick={close}
+            className="font-serif text-4xl font-bold text-white hover:text-white/60 transition-colors no-underline"
+          >
+            {l.label}
+          </a>
+        ))}
+
+        <a
+          href="#contact"
+          onClick={close}
+          className="text-xs font-semibold tracking-widest uppercase border border-white/40 text-white px-8 py-3 hover:bg-white hover:text-black transition-all no-underline mt-2"
+        >
+          Get in Touch
+        </a>
+      </div>
+    </>
+  );
+}
