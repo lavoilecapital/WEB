@@ -9,6 +9,9 @@ interface ScrollExpandMediaProps {
   children?: ReactNode;
 }
 
+// Dubai Marina aerial panoramic — free Unsplash license
+const BG_IMAGE = 'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=1920&q=80&auto=format&fit=crop';
+
 const ScrollExpandMedia = ({
   mediaSrc,
   posterSrc,
@@ -102,16 +105,29 @@ const ScrollExpandMedia = ({
 
   const mediaWidth = 300 + scrollProgress * (isMobile ? 650 : 1250);
   const mediaHeight = 400 + scrollProgress * (isMobile ? 200 : 400);
-  const textTranslateX = scrollProgress * (isMobile ? 180 : 150);
-
-  // Video pans from bottom (80%) to top (0%) as scroll progresses
-  // Gives the effect of "rising" through the video toward the Burj tip
   const videoObjectPosition = `center ${Math.round(80 - scrollProgress * 80)}%`;
 
   return (
     <div ref={sectionRef} className="overflow-x-hidden">
       <section className="relative flex flex-col items-center justify-start min-h-screen bg-[#0A0A0A]">
         <div className="relative w-full flex flex-col items-center min-h-screen">
+
+          {/* Fixed background image — fades out as video expands */}
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              opacity: Math.max(0, 1 - scrollProgress * 1.5),
+              transition: 'none',
+            }}
+          >
+            <img
+              src={BG_IMAGE}
+              alt="Dubai Marina"
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-black/60" />
+          </div>
+
           <div className="container mx-auto flex flex-col items-center justify-start relative z-10">
             <div className="flex flex-col items-center justify-center w-full min-h-screen relative">
 
@@ -141,7 +157,6 @@ const ScrollExpandMedia = ({
                     transition: 'none',
                   }}
                 />
-                {/* Overlay darkens at start, fades as video expands */}
                 <div
                   className="absolute inset-0"
                   style={{
@@ -152,7 +167,7 @@ const ScrollExpandMedia = ({
                 />
               </div>
 
-              {/* Overlay text — splits left/right on scroll */}
+              {/* Overlay text */}
               {overlayContent && (
                 <div
                   className="relative z-10 w-full flex flex-col items-center pointer-events-none px-6"
