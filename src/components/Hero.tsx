@@ -52,11 +52,10 @@ export default function Hero() {
   return (
     <section id="home">
       <ScrollExpandMedia
-        mediaSrc="/video/hero.mp4"
+        mediaSrc="https://res.cloudinary.com/dyyjf1tyw/video/upload/q_auto/f_auto/v1778618145/18647269-hd_1080_1920_25fps_emogum.mp4"
         scrollToExpand="Scroll to discover"
         overlayContent={
-          <div className="flex flex-col items-center text-center px-6 gap-4">
-            {/* Eyebrow */}
+          <div className="flex flex-col items-center text-center px-6 gap-5">
             <div className="flex items-center flex-wrap justify-center gap-4 text-[0.7rem] font-semibold tracking-[0.3em] uppercase text-white/70">
               <span className="w-9 h-px bg-white/40 block" />
               Dubai Relocation Experts
@@ -67,45 +66,31 @@ export default function Hero() {
               <span className="w-9 h-px bg-white/40 block" />
             </div>
 
-            {/* Main title */}
             <h1 className="font-serif text-[clamp(2.2rem,5vw,5rem)] font-bold leading-[1.05] tracking-tight text-white">
               Your new life in Dubai,<br />
               <em className="italic font-semibold text-white/75">seamlessly crafted</em>
             </h1>
 
-            {/* Subtitle */}
             <p className="text-[0.9rem] md:text-[1rem] text-white/70 max-w-lg leading-[1.85]">
               From Switzerland to the UAE — we handle every detail of your relocation, company formation, banking, and lifestyle. Personally. Precisely. In your language.
             </p>
-          </div>
-        }
-      >
-        {/* Content revealed after video expands fully */}
-        <div className="bg-[#0A0A0A] px-6 md:px-16 pt-20 pb-20 min-h-screen flex items-center">
-          <div className="max-w-3xl">
-            <div className="mb-10">
-              <LogoFull width={180} />
+
+            <div className="flex gap-4 flex-col sm:flex-row mt-2">
+              <a
+                href="#contact"
+                className="inline-block text-xs font-semibold tracking-[0.15em] uppercase bg-white text-black px-8 py-4 hover:bg-white/85 transition-all no-underline text-center"
+              >
+                Start Your Journey
+              </a>
+              <a
+                href="#services"
+                className="inline-block text-xs font-semibold tracking-[0.15em] uppercase border border-white/40 text-white px-8 py-4 hover:border-white/70 transition-all no-underline text-center"
+              >
+                Discover Our Services
+              </a>
             </div>
 
-            <div className="flex items-center flex-wrap gap-4 text-[0.7rem] font-semibold tracking-[0.3em] uppercase text-white/50 mb-7">
-              <span className="w-9 h-px bg-white/30 block" />
-              Dubai Relocation Experts
-              <span className="flex items-center gap-2">
-                <SwissCross size={18} />
-                Swiss Founded
-              </span>
-            </div>
-
-            <h1 className="font-serif text-[clamp(2.6rem,6.5vw,6rem)] font-bold leading-[1.0] tracking-tight text-white mb-5">
-              Your new life<br />in Dubai,<br />
-              <em className="italic font-semibold text-white/75">seamlessly crafted</em>
-            </h1>
-
-            <p className="text-[0.95rem] md:text-[1.05rem] text-white/65 max-w-xl mb-10 leading-[1.85]">
-              From Switzerland to the UAE — we handle every detail of your relocation, company formation, banking, and lifestyle. Personally. Precisely. In your language.
-            </p>
-
-            <div className="flex gap-3 flex-wrap mb-12">
+            <div className="flex gap-3 flex-wrap justify-center mt-2">
               {langs.map(l => (
                 <span
                   key={l.label}
@@ -116,23 +101,11 @@ export default function Hero() {
                 </span>
               ))}
             </div>
-
-            <div className="flex gap-4 flex-col sm:flex-row">
-              <a
-                href="#contact"
-                className="inline-block text-xs font-semibold tracking-[0.15em] uppercase bg-white text-black px-8 py-4 hover:bg-white/85 transition-all no-underline text-center"
-              >
-                Start Your Journey
-              </a>
-              <a
-                href="#services"
-                className="inline-block text-xs font-semibold tracking-[0.15em] uppercase border border-white/25 text-white px-8 py-4 hover:border-white/70 transition-all no-underline text-center"
-              >
-                Discover Our Services
-              </a>
-            </div>
           </div>
-        </div>
+        }
+      >
+        {/* Contenu vide après expansion — le reste du site suit naturellement */}
+        <div />
       </ScrollExpandMedia>
     </section>
   );
