@@ -77,8 +77,8 @@ export default function Contact() {
             <div className="flex flex-col gap-6 mb-10">
               {[
                 { icon: <MapPin size={18} />, label: 'Location', value: 'Dubai, United Arab Emirates', sub: 'Available for in-person meetings' },
-                { icon: <Mail size={18} />, label: 'Email', value: 'hello@lavoilecapital.com', sub: 'Response within 24 hours' },
-                { icon: <Phone size={18} />, label: 'WhatsApp & Phone', value: '+971 XX XXX XXXX', sub: 'Available in DE · FR · IT · EN' },
+                { icon: <Mail size={18} />, label: 'Email', value: 'Lavoileconnect@gmail.com', sub: 'Response within 24 hours' },
+                { icon: <Phone size={18} />, label: 'WhatsApp & Phone', value: '+971 55 284 3683', sub: 'Available in DE · FR · IT · EN' },
               ].map(item => (
                 <div key={item.label} className="flex items-start gap-4">
                   <div className="w-10 h-10 border border-white/15 flex items-center justify-center text-white/50 shrink-0">
