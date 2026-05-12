@@ -5,6 +5,7 @@ interface ScrollExpandMediaProps {
   posterSrc?: string;
   scrollToExpand?: string;
   overlayContent?: ReactNode;
+  onScrollProgress?: (progress: number) => void;
   children?: ReactNode;
 }
 
@@ -13,6 +14,7 @@ const ScrollExpandMedia = ({
   posterSrc,
   scrollToExpand = 'Scroll to discover',
   overlayContent,
+  onScrollProgress,
   children,
 }: ScrollExpandMediaProps) => {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -40,6 +42,7 @@ const ScrollExpandMedia = ({
         const scrollDelta = e.deltaY * 0.0009;
         const newProgress = Math.min(Math.max(scrollProgress + scrollDelta, 0), 1);
         setScrollProgress(newProgress);
+        onScrollProgress?.(newProgress);
         if (newProgress >= 1) {
           setMediaFullyExpanded(true);
           setShowContent(true);
@@ -66,6 +69,7 @@ const ScrollExpandMedia = ({
         const scrollDelta = deltaY * scrollFactor;
         const newProgress = Math.min(Math.max(scrollProgress + scrollDelta, 0), 1);
         setScrollProgress(newProgress);
+        onScrollProgress?.(newProgress);
         if (newProgress >= 1) {
           setMediaFullyExpanded(true);
           setShowContent(true);
@@ -77,7 +81,6 @@ const ScrollExpandMedia = ({
     };
 
     const handleTouchEnd = () => setTouchStartY(0);
-
     const handleScroll = () => {
       if (!mediaFullyExpanded) window.scrollTo(0, 0);
     };
@@ -101,6 +104,10 @@ const ScrollExpandMedia = ({
   const mediaHeight = 400 + scrollProgress * (isMobile ? 200 : 400);
   const textTranslateX = scrollProgress * (isMobile ? 180 : 150);
 
+  // Video pans from bottom (80%) to top (0%) as scroll progresses
+  // Gives the effect of "rising" through the video toward the Burj tip
+  const videoObjectPosition = `center ${Math.round(80 - scrollProgress * 80)}%`;
+
   return (
     <div ref={sectionRef} className="overflow-x-hidden">
       <section className="relative flex flex-col items-center justify-start min-h-screen bg-[#0A0A0A]">
@@ -108,7 +115,7 @@ const ScrollExpandMedia = ({
           <div className="container mx-auto flex flex-col items-center justify-start relative z-10">
             <div className="flex flex-col items-center justify-center w-full min-h-screen relative">
 
-              {/* Expanding video */}
+              {/* Expanding + panning video */}
               <div
                 className="absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl overflow-hidden"
                 style={{
@@ -129,36 +136,32 @@ const ScrollExpandMedia = ({
                   playsInline
                   preload="auto"
                   className="w-full h-full object-cover"
+                  style={{
+                    objectPosition: videoObjectPosition,
+                    transition: 'none',
+                  }}
                 />
-                {/* Dark overlay fading as video expands */}
+                {/* Overlay darkens at start, fades as video expands */}
                 <div
                   className="absolute inset-0"
                   style={{
                     background: 'rgba(0,0,0,0.45)',
-                    opacity: Math.max(0, 0.8 - scrollProgress * 0.6),
+                    opacity: Math.max(0, 0.8 - scrollProgress * 0.8),
                     transition: 'none',
                   }}
                 />
               </div>
 
-              {/* Overlay text — centered, splits apart as video expands */}
+              {/* Overlay text — splits left/right on scroll */}
               {overlayContent && (
                 <div
-                  className="relative z-10 w-full flex flex-col items-center pointer-events-none"
+                  className="relative z-10 w-full flex flex-col items-center pointer-events-none px-6"
                   style={{
                     opacity: Math.max(0, 1 - scrollProgress * 2.5),
                     transition: 'none',
                   }}
                 >
-                  {/* First half slides left */}
-                  <div
-                    style={{
-                      transform: `translateX(-${textTranslateX * 0.4}vw)`,
-                      transition: 'none',
-                    }}
-                  >
-                    {overlayContent}
-                  </div>
+                  {overlayContent}
                 </div>
               )}
 
@@ -170,7 +173,7 @@ const ScrollExpandMedia = ({
                   transition: 'none',
                 }}
               >
-                <p className="text-white/60 text-[0.65rem] font-semibold tracking-[0.25em] uppercase">
+                <p className="text-white/50 text-[0.65rem] font-semibold tracking-[0.25em] uppercase">
                   {scrollToExpand}
                 </p>
                 <svg width="14" height="22" viewBox="0 0 16 24" fill="none" className="animate-bounce">
@@ -180,7 +183,7 @@ const ScrollExpandMedia = ({
               </div>
             </div>
 
-            {/* Content revealed after full expansion */}
+            {/* Content after full expansion */}
             <div
               className="flex flex-col w-full"
               style={{
