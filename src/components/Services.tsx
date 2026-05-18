@@ -31,28 +31,28 @@ export default function Services() {
   useFadeIn(gridRef);
 
   return (
-    <section id="services" className="py-24 bg-neutral-950 text-white">
+    <section id="services" className="py-20 md:py-24 bg-neutral-950 text-white overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-6">
         <p className="text-xs tracking-[0.2em] uppercase text-neutral-500 flex items-center gap-3 mb-6">
           <span className="w-8 h-px bg-neutral-700 inline-block" /> What We Do
         </p>
-        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+        <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">
           Complete relocation &<br />
           <em className="italic font-normal text-neutral-400">business advisory</em>
         </h2>
-        <p className="text-neutral-400 max-w-xl mb-14">
+        <p className="text-neutral-400 max-w-xl mb-12 text-sm md:text-base leading-relaxed">
           A boutique advisory founded by Swiss expatriates who navigated every step of UAE relocation firsthand. We guide you through the entire process — with fluency in your language and precision in every detail.
         </p>
 
         <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {services.map(s => (
-            <div key={s.num} className="border border-white/10 p-8 flex flex-col gap-6">
+            <div key={s.num} className="border border-white/10 p-7 flex flex-col gap-5">
               <div className="flex items-center gap-4">
                 <span className="text-3xl font-serif text-white/20 font-bold">{s.num}</span>
                 <div className="text-white/60">{s.icon}</div>
               </div>
               <div>
-                <h3 className="text-xl font-bold mb-3">{s.name}</h3>
+                <h3 className="text-xl font-bold mb-2">{s.name}</h3>
                 <p className="text-sm text-neutral-400 leading-relaxed">{s.desc}</p>
               </div>
               <ul className="flex flex-col gap-2 mt-auto">

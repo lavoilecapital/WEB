@@ -1,8 +1,13 @@
 import { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 import { useFadeIn } from '../hooks/useFadeIn';
 import { MapPin, Mail, Phone, Instagram, Linkedin, CheckCircle } from 'lucide-react';
 import { SwissCross } from './Logo';
 import { supabase } from '../lib/supabase';
+
+const EMAILJS_SERVICE_ID = 'service_6fzywel';
+const EMAILJS_TEMPLATE_ID = 'template_qtz8hls';
+const EMAILJS_PUBLIC_KEY = 'CS2a6gEag_3qKPibW';
 
 const languages = ['Deutsch', 'Français', 'Italiano', 'English'];
 const serviceOptions = [
@@ -18,14 +23,7 @@ export default function Contact() {
   const formRef = useRef(null);
   useFadeIn(formRef);
 
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    language: '',
-    service: '',
-    message: '',
-  });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', language: '', service: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -34,43 +32,45 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.firstName.trim() || !form.email.trim()) {
-      setError('Please enter your name and email.');
-      return;
-    }
+    if (!form.firstName.trim() || !form.email.trim()) { setError('Please enter your name and email.'); return; }
     setError('');
     setSubmitting(true);
-    const { error: dbError } = await supabase.from('contact_submissions').insert({
-      first_name: form.firstName,
-      last_name: form.lastName,
-      email: form.email,
-      preferred_language: form.language,
-      service_interest: form.service,
-      message: form.message,
-    });
-    setSubmitting(false);
-    if (dbError) {
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        language: form.language || 'Not specified',
+        service: form.service || 'Not specified',
+        message: form.message || 'No message provided',
+      }, EMAILJS_PUBLIC_KEY);
+      await supabase.from('contact_submissions').insert({
+        first_name: form.firstName, last_name: form.lastName, email: form.email,
+        preferred_language: form.language, service_interest: form.service, message: form.message,
+      });
+      setSubmitted(true);
+    } catch (err) {
       setError('Something went wrong. Please try again.');
-      return;
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitted(true);
   };
 
   return (
-    <section id="contact" className="py-24 bg-neutral-950 text-white overflow-x-hidden">
+    <section id="contact" className="py-20 md:py-24 bg-neutral-950 text-white overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
 
-          {/* Info column */}
+          {/* Info */}
           <div>
             <p className="text-xs tracking-[0.2em] uppercase text-neutral-500 flex items-center gap-3 mb-6">
               <span className="w-8 h-px bg-neutral-700 inline-block" /> Contact Us
             </p>
-            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">
+            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-6">
               Let's talk<br />
               <em className="italic font-normal text-neutral-400">about your move</em>
             </h2>
-            <p className="text-neutral-400 mb-10 leading-relaxed">
+            <p className="text-neutral-400 mb-10 leading-relaxed text-sm md:text-base">
               Whether you're still planning or ready to start — reach out. A conversation costs nothing and clarity is priceless.
             </p>
 
@@ -86,33 +86,33 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-xs tracking-widest uppercase text-neutral-500 mb-0.5">{item.label}</p>
-                    <p className="text-white font-medium">{item.value}</p>
+                    <p className="text-white font-medium text-sm md:text-base">{item.value}</p>
                     <p className="text-xs text-neutral-500">{item.sub}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex gap-3 mb-8">
+            <div className="flex gap-3 mb-8 flex-wrap">
               {[
-                { icon: <Instagram size={16} />, label: 'Instagram' },
-                { icon: <Linkedin size={16} />, label: 'LinkedIn' },
+                { icon: <Instagram size={16} />, label: 'Instagram', href: 'https://www.instagram.com/lavoilecapital/' },
+{ icon: <Linkedin size={16} />, label: 'LinkedIn', href: 'https://www.linkedin.com/company/la-voile-capital/' },
               ].map(s => (
-                <a key={s.label} href="#" className="flex items-center gap-2 border border-white/15 px-4 py-2 text-xs text-neutral-400 hover:text-white hover:border-white/40 transition-colors">
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 border border-white/15 px-4 py-2 text-xs text-neutral-400 hover:text-white hover:border-white/40 transition-colors no-underline">
                   {s.icon} {s.label}
                 </a>
               ))}
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-neutral-600">
+            <div className="flex items-center gap-3 text-xs text-neutral-600 flex-wrap">
               <SwissCross size={14} color="currentColor" />
               <span>Swiss Founded Company</span>
-              <span className="text-neutral-700">·</span>
+              <span>·</span>
               <span>German · French · Italian · English</span>
             </div>
           </div>
 
-          {/* Form column */}
+          {/* Form */}
           <div ref={formRef}>
             {!submitted ? (
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -124,53 +124,35 @@ export default function Contact() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs text-neutral-400 tracking-wide">First Name</label>
-                    <input
-                      type="text"
-                      value={form.firstName}
-                      onChange={e => update('firstName', e.target.value)}
-                      className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3.5 text-[0.9rem] outline-none focus:border-white/50 transition-colors w-full font-sans"
-                    />
+                    <input type="text" value={form.firstName} onChange={e => update('firstName', e.target.value)}
+                      className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3 text-sm outline-none focus:border-white/50 transition-colors w-full" />
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs text-neutral-400 tracking-wide">Last Name</label>
-                    <input
-                      type="text"
-                      value={form.lastName}
-                      onChange={e => update('lastName', e.target.value)}
-                      className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3.5 text-[0.9rem] outline-none focus:border-white/50 transition-colors w-full font-sans"
-                    />
+                    <input type="text" value={form.lastName} onChange={e => update('lastName', e.target.value)}
+                      className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3 text-sm outline-none focus:border-white/50 transition-colors w-full" />
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs text-neutral-400 tracking-wide">Email Address</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={e => update('email', e.target.value)}
-                    className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3.5 text-[0.9rem] outline-none focus:border-white/50 transition-colors w-full font-sans"
-                  />
+                  <input type="email" value={form.email} onChange={e => update('email', e.target.value)}
+                    className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3 text-sm outline-none focus:border-white/50 transition-colors w-full" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs text-neutral-400 tracking-wide">Preferred Language</label>
-                    <select
-                      value={form.language}
-                      onChange={e => update('language', e.target.value)}
-                      className="bg-neutral-900 border border-white/[0.12] text-white px-4 py-3.5 text-[0.9rem] outline-none focus:border-white/50 transition-colors w-full font-sans appearance-none"
-                    >
+                    <select value={form.language} onChange={e => update('language', e.target.value)}
+                      className="bg-neutral-900 border border-white/[0.12] text-white px-4 py-3 text-sm outline-none focus:border-white/50 w-full appearance-none">
                       <option value="">Select language...</option>
                       {languages.map(l => <option key={l} value={l}>{l}</option>)}
                     </select>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs text-neutral-400 tracking-wide">I am interested in</label>
-                    <select
-                      value={form.service}
-                      onChange={e => update('service', e.target.value)}
-                      className="bg-neutral-900 border border-white/[0.12] text-white px-4 py-3.5 text-[0.9rem] outline-none focus:border-white/50 transition-colors w-full font-sans appearance-none"
-                    >
+                    <select value={form.service} onChange={e => update('service', e.target.value)}
+                      className="bg-neutral-900 border border-white/[0.12] text-white px-4 py-3 text-sm outline-none focus:border-white/50 w-full appearance-none">
                       <option value="">Select a service...</option>
                       {serviceOptions.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
@@ -179,33 +161,25 @@ export default function Contact() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs text-neutral-400 tracking-wide">Your Message</label>
-                  <textarea
-                    value={form.message}
-                    onChange={e => update('message', e.target.value)}
-                    rows={4}
-                    className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3.5 text-[0.9rem] outline-none focus:border-white/50 transition-colors w-full font-sans resize-y"
-                  />
+                  <textarea value={form.message} onChange={e => update('message', e.target.value)} rows={4}
+                    className="bg-white/[0.04] border border-white/[0.12] text-white px-4 py-3 text-sm outline-none focus:border-white/50 transition-colors w-full resize-y" />
                 </div>
 
                 {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="bg-white text-neutral-950 px-8 py-4 text-sm font-semibold tracking-wide hover:bg-neutral-200 transition-colors disabled:opacity-50"
-                >
+                <button type="submit" disabled={submitting}
+                  className="bg-white text-neutral-950 px-8 py-4 text-sm font-semibold tracking-wide hover:bg-neutral-200 transition-colors disabled:opacity-50 border-none cursor-pointer">
                   {submitting ? 'Sending...' : 'Send Message →'}
                 </button>
               </form>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-6 py-16 text-center">
+              <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
                 <CheckCircle size={48} className="text-white/60" />
                 <h3 className="text-2xl font-serif font-bold">Message received</h3>
-                <p className="text-neutral-400 max-w-sm">Thank you for reaching out. We'll be in touch within one business day in your preferred language.</p>
+                <p className="text-neutral-400 max-w-sm text-sm">Thank you for reaching out. We'll be in touch within one business day in your preferred language.</p>
               </div>
             )}
           </div>
-
         </div>
       </div>
     </section>
