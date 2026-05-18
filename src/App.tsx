@@ -6,6 +6,7 @@ import WhyUs from './components/WhyUs';
 import RealEstate from './components/RealEstate';
 import Concierge from './components/Concierge';
 import Process from './components/Process';
+import Referral from './components/Referral';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 
@@ -20,6 +21,7 @@ export default function App() {
       <RealEstate />
       <Concierge />
       <Process />
+      <Referral />
       <Contact />
       <Footer />
     </>
